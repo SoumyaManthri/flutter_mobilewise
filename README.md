@@ -14,4 +14,4 @@ flutter pub run build_runner build --delete-conflicting-outputs
 --> After making changes to Hive adapters
 
 flutter packages pub run build_runner build --delete-conflicting-outputs
---> When adding/editing TypeAdapters for Hive
+--> When adding/editing TypeAdapters for Hive# mobiwise
