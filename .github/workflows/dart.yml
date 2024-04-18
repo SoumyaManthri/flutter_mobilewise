@@ -1,42 +1,147 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: Dart
+name: Flutter_iOS_DISTRIBUTION_distribution
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
+    branches: [main]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build_ios_distribution:
+    runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout the code
+        uses: actions/checkout@v2
 
-      # Note: This workflow uses the latest stable version of the Dart SDK.
-      # You can specify other versions if desired, see documentation here:
-      # https://github.com/dart-lang/setup-dart/blob/main/README.md
-      # - uses: dart-lang/setup-dart@v1
-      - uses: dart-lang/setup-dart@9a04e6d73cca37bd455e0608d7e5092f881fd603
+      - name: Install the Codemagic ClI tools
+        run: pip install codemagic-cli-tools
 
-      - name: Install dependencies
-        run: dart pub get
+      - name: Create new branch
+        id: create_branch
+        run: |
+          git checkout -b new_branch
 
-      # Uncomment this step to verify the use of 'dart format' on each commit.
-      # - name: Verify formatting
-      #   run: dart format --output=none --set-exit-if-changed .
+      - name: Clean Derived Data
+        run: |
+          rm -rf ~/Library/Developer/Xcode/DerivedData
 
-      # Consider passing '--fatal-infos' for slightly stricter analysis.
-      - name: Analyze project source
-        run: dart analyze
+      - name: Install Apple Certificate (Distribution)
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION }}
+          p12-password: ${{ secrets.IOS_PASSWORD }}
 
-      # Your project will need to have tests in test/ and a dependency on
-      # package:test for this step to succeed. Note that Flutter projects will
-      # want to change this to 'flutter test'.
-      - name: Run tests
-        run: dart test
+      - name: Install Provisioning Profile
+        env:
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.NEW_DISTRIBUTION_IOS }}
+        run: |
+          PP_PATH=$RUNNER_TEMP/NEW_DISTRIBUTION_IOS.mobileprovision
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode --output $PP_PATH
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      - name: Install and set Flutter version
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16'
+          channel: 'stable'
+          cache: true
+
+      - name: Restore packages
+        run: |
+          flutter clean
+          flutter pub get
+
+      - name: Reinstall CocoaPods
+        run: |
+          cd ios
+          rm -rf Pods/ Podfile.lock
+          pod deintegrate
+          pod install
+          cd ..
+
+      - name: Print current working directory
+        run: pwd
+
+      - name: List contents of the directory
+        run: |
+          ls -l
+          echo "Flutter Root: ${{ env.FLUTTER_ROOT }}"
+          cd ${{ env.FLUTTER_ROOT }}
+          ls -R
+          ls -l
+
+      - name: Clean Xcode Project
+        run: xcodebuild clean -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release
+
+      - name: Build and Resolve Swift Dependencies
+        run: xcodebuild -resolvePackageDependencies -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release
+
+      - name: Print Xcode Environment Variables
+        run: |
+          echo $PATH
+          xcode-select -p
+
+      - name: Create IPA directory in root
+        run: mkdir -p IPA
+
+      - name: Build and export .ipa (Distribution)
+        run: |
+          PROVISIONING_PROFILE_UUID="23aa3adc-6691-44c1-b266-b82a19b0c3b9"
+          echo '<?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>compileBitcode</key>
+              <false/>
+              <key>method</key>
+              <string>app-store</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>teamID</key>
+              <string>4RD8TSB5PJ</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.vassar.mobilewise.flutter-mobilewise</key>
+                  <string>23aa3adc-6691-44c1-b266-b82a19b0c3b9</string>
+              </dict>
+              <key>thinning</key>
+              <string>none</string>
+          </dict>
+          </plist>' > ExportOptions.plist
+          
+          xcrun xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release -archivePath IPA/app.xcarchive archive OTHER_SWIFT_FLAGS="-Onone -Xfrontend -serialize-debugging-options" GCC_OPTIMIZATION_LEVEL="s"
+          xcrun xcodebuild -exportArchive -archivePath IPA/app.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath IPA/mobileapp.ipa -verbose
+          #cd IPA
+          #mkdir -p Payload
+          #cp -R app.xcarchive/Products/Applications/Runner.app Payload/
+
+          # Check if the Runner.app was copied successfully
+          #if [ ! -d "Payload/Runner.app" ]; then
+           # echo "Error: Runner.app not found or failed to copy."
+            #exit 1
+          #fi
+          
+          # Zip the Payload directory
+          #zip -qyr mobileapp.ipa Payload
+          
+          # Check if the zip command succeeded
+          #if [ $? -ne 0 ]; then
+           # echo "Error: Failed to create the IPA file."
+            #exit 1
+          #fi
+          
+          # Clean up
+          #rm -rf Payload
+
+
+      - name: List contents of the IPA directory
+        run: |
+          ls -R IPA
+
+      - name: Upload IPA as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-ipa
+          path: IPA/mobileapp.ipa
