@@ -1,12 +1,12 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/home/vassar-divyanshu/snap/flutter/common/flutter
-FLUTTER_APPLICATION_PATH=/home/vassar-divyanshu/AndroidStudioProjects/mobilewise_sravan/flutter_mobilewise
+FLUTTER_ROOT=/Users/vassarlabs/Development/flutter
+FLUTTER_APPLICATION_PATH=/Users/vassarlabs/Downloads/flutter_mobilewise
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib/main.dart
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=1.0.24
 FLUTTER_BUILD_NUMBER=25
-EXCLUDED_ARCHS[sdk=iphonesimulator*]=i386
+EXCLUDED_ARCHS[sdk=iphonesimulator*]=i386 arm64
 EXCLUDED_ARCHS[sdk=iphoneos*]=armv7
 DART_OBFUSCATION=false
 TRACK_WIDGET_CREATION=true
