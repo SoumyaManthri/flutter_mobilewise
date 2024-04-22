@@ -1663,7 +1663,21 @@
       <option name="project" value="LOCAL" />
       <updated>1713770534413</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="New Mobilewise changes">
+      <created>1713770768748</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1713770768748</updated>
+    </task>
+    <task id="LOCAL-00009" summary="New Mobilewise changes">
+      <created>1713770908736</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1713770908736</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
