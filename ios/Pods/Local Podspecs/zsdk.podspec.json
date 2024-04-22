@@ -1,0 +1,37 @@
+{
+  "name": "zsdk",
+  "version": "0.0.2",
+  "summary": "Zebra Link OS SDK Flutter",
+  "description": "Zebra Link OS SDK Flutter Pod",
+  "homepage": "http://example.com",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "Your Company": "email@example.com"
+  },
+  "source": {
+    "path": "."
+  },
+  "source_files": "Classes/**/*",
+  "public_header_files": "Classes/**/*.h",
+  "dependencies": {
+    "Flutter": [
+
+    ]
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "static_framework": true,
+  "ios": {
+    "vendored_libraries": "Libs/zsdk/libzsdk.a"
+  },
+  "pod_target_xcconfig": {
+    "DEFINES_MODULE": "YES",
+    "VALID_ARCHS[sdk=iphonesimulator*]": "x86_64",
+    "EXCLUDED_ARCHS[sdk=iphonesimulator*]": "arm64",
+    "ENABLE_BITCODE": "NO"
+  }
+}
