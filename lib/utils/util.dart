@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer' as developer;
+//import 'dart:html';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_mobilewise/shared/model/form_model.dart';
 import 'package:intl/intl.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:recase/recase.dart';
 
 import '../../../environments/dev_env.dart';
 import '../../../environments/prod_env.dart';
@@ -80,6 +83,7 @@ class Util {
     }
   }
 
+
   /// Token validation
   bool validateToken(String token) {
     /// Split into 3 parts with . delimiter
@@ -102,6 +106,64 @@ class Util {
     } else {
       return false;
     }
+  }
+  showPermissionsAlert(BuildContext context, {String? permissionName}) async{
+    var result = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return WillPopScope(
+            onWillPop: () {
+              Navigator.pop(context, true);
+              return Future.value(true);
+            },
+            child: AlertDialog(
+                title: Text("Mandatory Permissions Denied", style: constants.largeBlackTextStyle),
+                content: Text(
+                  "Please grant ${permissionName != null ? "${permissionName.split(".")[1].titleCase} permission" : "requested permissions"} for app functionality through settings app",
+                  style: constants.lMediumBlackTextStyle,
+                ),
+                actions: [
+                  TextButton(
+                      child: Text(
+                        "Okay",
+                      ),
+                      onPressed: () async{
+                        Navigator.pop(context, true);
+                      }
+                  )
+                ]
+            ),
+          );
+        }
+    );
+    return result;
+  }
+
+  Future<bool> checkPermissionStatus(BuildContext context, Permission permission) async{
+    print(permission.toString());
+    PermissionStatus? permissionStatus = await permission.request();
+    if(permissionStatus.isGranted) {
+      return true;
+    } else if (permissionStatus == PermissionStatus.denied) {
+      Map<Permission, PermissionStatus> statuses = await [
+        permission,
+      ].request();
+      PermissionStatus? newPermissionStatus = statuses[permission];
+      if(newPermissionStatus == PermissionStatus.granted) {
+        return true;
+      }
+    } else if (permissionStatus == PermissionStatus.permanentlyDenied) {
+      bool? settingsDone = await showPermissionsAlert(context, permissionName: permission.toString());
+      if(settingsDone != null) {
+        PermissionStatus? latestPermissionStatus = await permission.status;
+        if(latestPermissionStatus.isGranted) {
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+    return false;
   }
 
   String decodeBase64(String strDecode) {

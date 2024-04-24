@@ -9,6 +9,7 @@ import 'package:flutter_mobilewise/screens/printer/printer_utils.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -2521,7 +2522,7 @@ class FormViewModel extends LoadingViewModel {
 
   getAddressFromLocation(
       FrameworkFormField field, BuildContext buildContext) async {
-    bool serviceEnabled;
+    /*bool serviceEnabled;
     LocationPermission permission;
 
     permission = await Geolocator.requestPermission();
@@ -2535,6 +2536,15 @@ class FormViewModel extends LoadingViewModel {
         ));
         return;
       }
+      AppState.instance.getCurrentUserLocation();
+    } else {
+      ScaffoldMessenger.of(buildContext).showSnackBar(const SnackBar(
+        content: Text(constants.grantLocationPermission),
+      ));
+      return;
+    }*/
+    bool checkedPermission = await Util.instance.checkPermissionStatus(buildContext, Permission.location);
+    if (checkedPermission) {
       AppState.instance.getCurrentUserLocation();
     } else {
       ScaffoldMessenger.of(buildContext).showSnackBar(const SnackBar(
