@@ -145,3 +145,6 @@ jobs:
         with:
           name: ios-ipa
           path: IPA/mobileapp.ipa
+
+      - name: Install the Transporter
+        run: sudo gem install transporter
