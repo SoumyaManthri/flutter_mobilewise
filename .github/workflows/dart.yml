@@ -150,4 +150,4 @@ jobs:
         run: sudo gem install transporter
 
       - name: Upload IPA to App Store Connect
-        run: transporter upload -u ${{ secrets.APP_STORE_CONNECT_USERNAME }} -p ${{ secrets.APP_STORE_CONNECT_PASSWORD }} -f IPA/mobileapp.ipa
+        run: transporter upload -u ${{ secrets.APP_STORE_CONNECT_USERNAME }} -p ${{ secrets.APP_STORE_CONNECT_PASSWORD }} -f /Users/runner/work/flutter_mobilewise/flutter_mobilewise/IPA/mobileapp.ipa
