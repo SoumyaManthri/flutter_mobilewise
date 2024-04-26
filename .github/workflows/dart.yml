@@ -148,3 +148,6 @@ jobs:
 
       - name: Install the Transporter
         run: sudo gem install transporter
+
+      - name: Upload IPA to App Store Connect
+        run: transporter upload -u ${{ secrets.APP_STORE_CONNECT_USERNAME }} -p ${{ secrets.APP_STORE_CONNECT_PASSWORD }} -f IPA/mobileapp.ipa
